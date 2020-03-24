@@ -18,12 +18,11 @@ INCLUDE Irvine32.inc
 	pos DWORD 0
 	hola DWORD 0
 	numero DWORD 0
-	unDig BYTE "coma", 0
+	decima BYTE "0.0", 0
+	tamDec = ($ - decima)
 	car BYTE "a", 0
-	doDig BYTE "numero", 0
 	tamBufer = ($ - car)
 	diez DWORD 10
-	
 	
 .code
 main PROC
@@ -55,42 +54,36 @@ main PROC
 	add eax, 3						;Empieza en 3 porque los 3 primeros caracteres son caracteres raros
 	mov edx,eax		
 	call WriteString				;Se imprime el doc
-	mov esi,37						;Desde aqui voy a recorrer caracter por caracter
+	mov esi,47						;Desde aqui voy a recorrer caracter por caracter
 	mov ecx,bytesLeidos				;Cuantos caracteres hay
 
-	ident:
+	ident:							;Este ciclo es para parsear los numeros del documento
 		movzx eax,bufer[esi]		;guardo en eax el caracter numero esi
 		cmp eax,44					;la coma es el caracter 44 en la tabla ASCII
 		jz coma
-		cmp eax,10
+		cmp eax,10					;Compara el caracter con un salto de linea
 		jz coma
+		cmp eax,46					;Compara el caracter con un punto
+		jz punto
 		call IsDigit				;Verifica si el caracter numero esi es un digito
 		jz digito
 		jmp salto					;Si es algo diferente, no pasa nada
 		digito:
 			call Num1		
 			jmp salto
+		punto:
+			inc esi
+			call Punto1
+			jmp salto
 		coma:
-			mov eax,numero
-			call WriteInt
+			finit
+			fld numero
+			call WriteFloat
 			call Crlf
 			mov numero, 0
 		salto:
-
 			inc esi
 		loop ident
-	mov edx,OFFSET doDig			;Aqui inicia la impresion del ultimo texto
-	call WriteString
-	call Crlf
-	mov eax, pos
-	call WriteInt
-	call Crlf
-	mov edx,OFFSET unDig
-	call WriteString
-	call Crlf
-	mov eax, hola
-	call WriteInt
-	call Crlf						;Aqui se acaba la impresion
 	jmp fin
 	archivo_error:					;Se muestra un mensaje si sucede algun error	
 		mov eax, black + (12 * 16)
@@ -105,19 +98,40 @@ main PROC
 	exit
 main ENDP
 Num1 PROC
-	mov hola,esi
+	mov hola,esi					;Guardamos la posicion actual de esi en hola		
 	mov esi,0
-	mov car[esi],al
-	mov esi, hola
-	mov eax, numero			
-	mul diez
-	mov numero, eax
-	mov edx,OFFSET car
-	mov pos,ecx
+	mov car[esi],al					;Guardamos el caracter en car
+	mov esi, hola					;Recuperamos esi
+	mov eax, numero					
+	mul diez						;Multiplicamos por 10 el numero que llevamos hasta ahora
+	mov numero, eax					
+	mov edx,OFFSET car				;Preparamos los registros para parsear
+	mov pos,ecx						;Guardamos la posicion actual de ecx en pos
 	mov ecx,tamBufer
-	call ParseDecimal32
-	add numero,eax
-	mov ecx,pos	
+	call ParseDecimal32				;Parseamos a decimal el caracter actual
+	add numero,eax					;Sumamos el caracter parseado al numero actual
+	mov ecx,pos						;Recuperamos la posicion de ecx para poder seguir con la iteracion de ident
 	ret
 Num1 ENDP
+Punto1 PROC
+	movzx eax,bufer[esi]			;guardo en eax el caracter numero esi
+	mov hola,esi					;Guardamos la posicion actual de esi en hola		
+	mov esi,0
+	mov car[esi],al					;Guardamos el caracter en car
+	mov esi,hola
+	mov edx,OFFSET car				;Preparamos los registros para parsear
+	mov pos,ecx						;Guardamos la posicion actual de ecx en pos
+	mov ecx,tamBufer
+	call ParseDecimal32				;Parseamos a decimal el caracter actual
+	mov ecx,pos
+	mov pos,eax
+	finit
+	fild pos
+	fild diez
+	fdiv
+	fild numero
+	fadd
+	fstp numero
+	ret
+Punto1 ENDP
 END main
