@@ -12,7 +12,12 @@ INCLUDE Irvine32.inc
 	nombreDeArchivo BYTE "DATOS.CSV",0
 	manejador DWORD ?
 	bufer BYTE TAM_BUFER DUP(?)
-	arreglo BYTE TAM_BUFER DUP(0 )
+	arreglo BYTE TAM_BUFER DUP(0) 
+
+	sangreArterial REAL4 30 DUP(?) ; Los datos de cada fila, serán almacenados acá
+    sangreVenosa REAL4 30 DUP(?)
+
+
 	bytesleidos DWORD ?
 	aux DWORD ?
 	pos DWORD 0
@@ -21,14 +26,17 @@ INCLUDE Irvine32.inc
 	decima BYTE "0.0", 0
 	tamDec = ($ - decima)
 	car BYTE "a", 0
+	udt BYTE DWORD, 0					; Variable que irá del 1 - 3
 	tamBufer = ($ - car)
 	diez DWORD 10
+	posSA DWORD 0
+	posSV DWORD 0
 	
 .code
 main PROC
 	mov eax, yellow					;Seccion de impresion de mensajes por pantalla
 	call SetTextColor
-	mov edx, OFFSET texto1
+	mov edx, OFFSET texto1			
 	call WriteString
 	mov eax, 9						;Azul brillante
 	call SetTextColor
@@ -53,9 +61,11 @@ main PROC
 	mov eax, OFFSET bufer			;Se guarda la posicion en donde esta bufer para imprimir el doc
 	add eax, 3						;Empieza en 3 porque los 3 primeros caracteres son caracteres raros
 	mov edx,eax		
-	call WriteString				;Se imprime el doc
+	call WriteString				;Se imprime el doc				
 	mov esi,47						;Desde aqui voy a recorrer caracter por caracter
 	mov ecx,bytesLeidos				;Cuantos caracteres hay
+	mov udt, 0						;Iniciamos el clasificador
+	mov edi, 0
 
 	ident:							;Este ciclo es para parsear los numeros del documento
 		movzx eax,bufer[esi]		;guardo en eax el caracter numero esi
@@ -76,11 +86,19 @@ main PROC
 			call Punto1
 			jmp salto
 		coma:
-			finit
-			fld numero
-			call WriteFloat
-			call Crlf
-			mov numero, 0
+			inc udt
+			;finit
+			;fld numero
+			;call WriteFloat
+			;call Crlf
+			cmp udt, 1						; Decidir donde estará agregado el valor
+			jz salto
+			cmp udt, 2
+			jz SA
+			call venosa
+			jmp salto
+		SA:
+			call arterial
 		salto:
 			inc esi
 		loop ident
@@ -113,6 +131,7 @@ Num1 PROC
 	mov ecx,pos						;Recuperamos la posicion de ecx para poder seguir con la iteracion de ident
 	ret
 Num1 ENDP
+
 Punto1 PROC
 	movzx eax,bufer[esi]			;guardo en eax el caracter numero esi
 	mov hola,esi					;Guardamos la posicion actual de esi en hola		
@@ -134,4 +153,35 @@ Punto1 PROC
 	fstp numero
 	ret
 Punto1 ENDP
+
+venosa PROC							;Llenaremos los datos de Sangre Venosa
+	finit
+	fld numero
+	mov edi, posSV					; tomamos la posición anterior
+	call WriteFloat
+	call Crlf
+	fstp sangreVenosa[edi]
+	add posSV,TYPE REAL4	
+	mov udt, 0	
+	mov edi,0
+	fld numero
+	mov numero, 0
+	ret
+venosa ENDP
+
+
+arterial PROC						; Llenaremos los datos de Sangre Arterial
+	finit
+	fld numero
+	mov edi, posSA					; tomamos la posición anterior		
+	call WriteFloat
+	call Crlf
+	fstp sangreArterial[edi]		; damos por entendido que UDT = 3.
+	add posSA, TYPE REAL4
+	mov edi, 0
+	fld numero
+	mov numero, 0
+	ret
+arterial ENDP
+
 END main
