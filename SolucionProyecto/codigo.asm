@@ -5,6 +5,7 @@ INCLUDE Irvine32.inc
 	TAM_BUFER = 5000
 
 .data
+	;Variables de texto
 	txterror BYTE "Hubo un error en la lectura del archivo, verifique la ubicacion o nombre del archivo",0ah,0
 	texto1 BYTE "Bienvenido, este programa en ensamblador es para Arquitectura de Computadores (3007863) del semestre 2019-2",0ah,0
 	texto2 BYTE "hecho en el 2020 por Alejandro Bedoya Taborda 1152226157 y Cristian Camilo Henao Rojas 1017259477", 0ah, 0
@@ -14,32 +15,35 @@ INCLUDE Irvine32.inc
 	nombreDeArchivo BYTE "DATOS.CSV",0
 	manejador DWORD ?
 	bufer BYTE TAM_BUFER DUP(?)
-	arreglo BYTE TAM_BUFER DUP(0) 
-
+	bytesleidos DWORD ?
+	;Fin variables de texto
+	;Variables para uso de calculo general
 	sangreArterial REAL4 30 DUP(?)  ;Los datos de cada fila, serán almacenados acá
     sangreVenosa REAL4 30 DUP(?)
 	numf REAL4 ?					;Variable para agregar los datos a la pila
-
 	tamLista1 DWORD 30
 	tamlista2 DWORD 30.0
-	bytesleidos DWORD ?
 	aux DWORD ?
 	pos DWORD 0
-	hola DWORD 0
+	auxz DWORD 0
 	numero DWORD 0
 	mediaSA DWORD 0
+	udt BYTE DWORD, 0				;Variable que irá del 1 - 3
+	posSA DWORD 0
+	posSV DWORD 0
+	;Fin variable de uso general
+	;Variable de uso para parseo
 	decima BYTE "0.0", 0
 	tamDec = ($ - decima)
 	car BYTE "a", 0
-	udt BYTE DWORD, 0					; Variable que irá del 1 - 3
 	tamBufer = ($ - car)
 	diez DWORD 10
-	posSA DWORD 0
-	posSV DWORD 0
 	uno DWORD 1
+	;Fin de variables de uso para parseo
 .code
 main PROC
-	mov eax, yellow					;Seccion de impresion de mensajes por pantalla
+	;Seccion de impresion de mensajes por pantalla
+	mov eax, yellow					
 	call SetTextColor
 	mov edx, OFFSET texto1			
 	call WriteString
@@ -66,13 +70,16 @@ main PROC
 	mov eax, OFFSET bufer			;Se guarda la posicion en donde esta bufer para imprimir el doc
 	add eax, 3						;Empieza en 3 porque los 3 primeros caracteres son caracteres raros
 	mov edx,eax		
-	call WriteString				;Se imprime el doc				
+	call WriteString				;Se imprime el doc
+	;Fin seccion de impresion de mensajes por pantalla
+
 	mov esi,47						;Desde aqui voy a recorrer caracter por caracter
 	mov ecx,bytesLeidos				;Cuantos caracteres hay
 	mov udt, 0						;Iniciamos el clasificador
 	mov edi, 0
 
 	ident:							;Este ciclo es para parsear los numeros del documento
+		
 		movzx eax,bufer[esi]		;guardo en eax el caracter numero esi
 		cmp eax,44					;la coma es el caracter 44 en la tabla ASCII
 		jz coma
@@ -82,6 +89,7 @@ main PROC
 		jz punto
 		call IsDigit				;Verifica si el caracter numero esi es un digito
 		jz digito
+		
 		jmp salto					;Si es algo diferente, no pasa nada
 		digito:
 			call Num1		
@@ -97,9 +105,11 @@ main PROC
 			cmp udt, 2
 			jz SA
 			call venosa
+			
 			jmp salto
 		NP:
 			mov numero, 0
+			mov numf,0
 			jmp salto
 		SA:
 			call arterial
@@ -170,10 +180,10 @@ main PROC
 	exit
 main ENDP
 Num1 PROC
-	mov hola,esi					;Guardamos la posicion actual de esi en hola		
+	mov auxz,esi					;Guardamos la posicion actual de esi en auxz		
 	mov esi,0
 	mov car[esi],al					;Guardamos el caracter en car
-	mov esi, hola					;Recuperamos esi
+	mov esi, auxz					;Recuperamos esi
 	mov eax, numero					
 	mul diez						;Multiplicamos por 10 el numero que llevamos hasta ahora
 	mov numero, eax					
@@ -193,10 +203,10 @@ Num1 ENDP
 
 Punto1 PROC
 	movzx eax,bufer[esi]			;guardo en eax el caracter numero esi
-	mov hola,esi					;Guardamos la posicion actual de esi en hola		
+	mov auxz,esi					;Guardamos la posicion actual de esi en auxz		
 	mov esi,0
 	mov car[esi],al					;Guardamos el caracter en car
-	mov esi,hola
+	mov esi,auxz
 	mov edx,OFFSET car				;Preparamos los registros para parsear
 	mov pos,ecx						;Guardamos la posicion actual de ecx en pos
 	mov ecx,tamBufer
@@ -207,8 +217,9 @@ Punto1 PROC
 	fild pos
 	fild diez
 	fdiv							;Obtenemos el punto decimal del numero del archivo
-	fld numf
+	fild numero
 	fadd							;Se lo agregamos al numero que llevamos en numf 
+	
 	fstp numf						;Se guarda el valor en numf
 	ret
 Punto1 ENDP
@@ -222,6 +233,7 @@ venosa PROC							;Llenaremos los datos de Sangre Venosa
 	mov udt, 0	
 	mov edi,0
 	fld numf
+	mov numero,0
 	mov numf, 0
 	ret
 venosa ENDP
@@ -235,6 +247,7 @@ arterial PROC						; Llenaremos los datos de Sangre Arterial
 	add posSA, TYPE REAL4
 	mov edi, 0
 	fld numf
+	mov numero,0
 	mov numf, 0
 	ret
 arterial ENDP
