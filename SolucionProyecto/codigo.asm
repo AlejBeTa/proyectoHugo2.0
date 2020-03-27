@@ -14,8 +14,9 @@ INCLUDE Irvine32.inc
 	bufer BYTE TAM_BUFER DUP(?)
 	arreglo BYTE TAM_BUFER DUP(0) 
 
-	sangreArterial REAL4 30 DUP(?) ; Los datos de cada fila, serán almacenados acá
+	sangreArterial REAL4 30 DUP(?)  ;Los datos de cada fila, serán almacenados acá
     sangreVenosa REAL4 30 DUP(?)
+	numf REAL4 ?					;Variable para agregar los datos a la pila
 
 	tamLista1 DWORD 30
 	tamlista2 DWORD 30.0
@@ -32,7 +33,7 @@ INCLUDE Irvine32.inc
 	diez DWORD 10
 	posSA DWORD 0
 	posSV DWORD 0
-	
+	uno DWORD 1
 .code
 main PROC
 	mov eax, yellow					;Seccion de impresion de mensajes por pantalla
@@ -88,11 +89,7 @@ main PROC
 			jmp salto
 		coma:
 			inc udt
-			;finit
-			;fld numero
-			;call WriteFloat
-			;call Crlf
-			cmp udt, 1						; Decidir donde estará agregado el valor
+			cmp udt, 1				;Decidir donde estará agregado el valor
 			jz NP
 			cmp udt, 2
 			jz SA
@@ -151,6 +148,11 @@ Num1 PROC
 	mov ecx,tamBufer
 	call ParseDecimal32				;Parseamos a decimal el caracter actual
 	add numero,eax					;Sumamos el caracter parseado al numero actual
+	finit
+	fild numero
+	fild uno
+	fdiv							;Convertimos el numero que tenemos en la variable numero a un decimal
+	fstp numf						;Guardamos ese numero decimal en numf
 	mov ecx,pos						;Recuperamos la posicion de ecx para poder seguir con la iteracion de ident
 	ret
 Num1 ENDP
@@ -170,36 +172,36 @@ Punto1 PROC
 	finit
 	fild pos
 	fild diez
-	fdiv
-	fild numero
-	fadd
-	fstp numero
+	fdiv							;Obtenemos el punto decimal del numero del archivo
+	fld numf
+	fadd							;Se lo agregamos al numero que llevamos en numf 
+	fstp numf						;Se guarda el valor en numf
 	ret
 Punto1 ENDP
 
 venosa PROC							;Llenaremos los datos de Sangre Venosa
 	finit
-	fld numero						; Contiene el número que deseamos almacenas
+	fld numf						; Contiene el número que deseamos almacenas
 	mov edi, posSV					; tomamos la posición anterior
 	fstp sangreVenosa[edi]
 	add posSV,TYPE REAL4	
 	mov udt, 0	
 	mov edi,0
-	fld numero
-	mov numero, 0
+	fld numf
+	mov numf, 0
 	ret
 venosa ENDP
 
 
 arterial PROC						; Llenaremos los datos de Sangre Arterial
 	finit
-	fld numero						;contiene el número que deseamos almacenar
+	fld numf						;contiene el número que deseamos almacenar
 	mov edi, posSA					; tomamos la posición anterior		
 	fstp sangreArterial[edi]		; damos por entendido que UDT = 3.
 	add posSA, TYPE REAL4
 	mov edi, 0
-	fld numero
-	mov numero, 0
+	fld numf
+	mov numf, 0
 	ret
 arterial ENDP
 
