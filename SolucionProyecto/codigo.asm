@@ -25,6 +25,7 @@ INCLUDE Irvine32.inc
 	pos DWORD 0
 	hola DWORD 0
 	numero DWORD 0
+	mediaSA DWORD 0
 	decima BYTE "0.0", 0
 	tamDec = ($ - decima)
 	car BYTE "a", 0
@@ -129,7 +130,34 @@ main PROC
 		call Crlf
 		call Crlf
 		call writeFloat
+		fstp mediaSA
 
+; Desviación estandar de la sangre Arterial:
+	std_SA:
+		finit 
+		mov numero, 0
+		mov esi, 0
+		mov ecx, tamLista1
+		suma:
+			fld sangreArterial[esi]
+			add esi, TYPE REAL4
+			fld mediaSA
+			fsub 
+			fst aux
+			fld aux
+			fmul
+			fld numero
+			fadd
+			fstp numero
+
+		loop suma
+		fld numero
+		fld tamLista2
+		fdiv
+		fsqrt
+		call Crlf
+		call Crlf
+		call writeFloat
 	fin:
 		
 		
