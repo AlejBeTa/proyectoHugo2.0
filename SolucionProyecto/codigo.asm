@@ -17,7 +17,8 @@ INCLUDE Irvine32.inc
 	sangreArterial REAL4 30 DUP(?) ; Los datos de cada fila, serán almacenados acá
     sangreVenosa REAL4 30 DUP(?)
 
-	tamLista DWORD 30
+	tamLista1 DWORD 30
+	tamlista2 DWORD 30.0
 	bytesleidos DWORD ?
 	aux DWORD ?
 	pos DWORD 0
@@ -117,15 +118,20 @@ main PROC
 ; <--- Lectura y extracción de datos completado --->
 ; <--- Ahora haremos los calculos pedidos --->
 	media_SA:
+		finit
 		mov esi, 0 
-		mov ecx, tamLista
+		mov ecx, tamLista1
+		fldz
 		L2:
 			fld sangreArterial[esi]
-			call writeFloat
-			call Crlf
-			fstp st(0)
+			fadd
 			add esi, TYPE REAL4
 		loop L2
+		fld tamLista2
+		fdiv
+		call Crlf
+		call Crlf
+		call writeFloat
 
 	fin:
 		
