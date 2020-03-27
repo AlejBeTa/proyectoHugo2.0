@@ -17,7 +17,7 @@ INCLUDE Irvine32.inc
 	sangreArterial REAL4 30 DUP(?) ; Los datos de cada fila, serán almacenados acá
     sangreVenosa REAL4 30 DUP(?)
 
-
+	tamLista DWORD 30
 	bytesleidos DWORD ?
 	aux DWORD ?
 	pos DWORD 0
@@ -92,17 +92,20 @@ main PROC
 			;call WriteFloat
 			;call Crlf
 			cmp udt, 1						; Decidir donde estará agregado el valor
-			jz salto
+			jz NP
 			cmp udt, 2
 			jz SA
 			call venosa
+			jmp salto
+		NP:
+			mov numero, 0
 			jmp salto
 		SA:
 			call arterial
 		salto:
 			inc esi
 		loop ident
-	jmp fin
+	jmp media_SA
 	archivo_error:					;Se muestra un mensaje si sucede algun error	
 		mov eax, black + (12 * 16)
 		call SetTextColor
@@ -110,6 +113,20 @@ main PROC
 		call WriteString
 		mov eax, white + (black * 16)
 		call SetTextColor
+
+; <--- Lectura y extracción de datos completado --->
+; <--- Ahora haremos los calculos pedidos --->
+	media_SA:
+		mov esi, 0 
+		mov ecx, tamLista
+		L2:
+			fld sangreArterial[esi]
+			call writeFloat
+			call Crlf
+			fstp st(0)
+			add esi, TYPE REAL4
+		loop L2
+
 	fin:
 		
 		
@@ -156,10 +173,8 @@ Punto1 ENDP
 
 venosa PROC							;Llenaremos los datos de Sangre Venosa
 	finit
-	fld numero
+	fld numero						; Contiene el número que deseamos almacenas
 	mov edi, posSV					; tomamos la posición anterior
-	call WriteFloat
-	call Crlf
 	fstp sangreVenosa[edi]
 	add posSV,TYPE REAL4	
 	mov udt, 0	
@@ -172,10 +187,8 @@ venosa ENDP
 
 arterial PROC						; Llenaremos los datos de Sangre Arterial
 	finit
-	fld numero
+	fld numero						;contiene el número que deseamos almacenar
 	mov edi, posSA					; tomamos la posición anterior		
-	call WriteFloat
-	call Crlf
 	fstp sangreArterial[edi]		; damos por entendido que UDT = 3.
 	add posSA, TYPE REAL4
 	mov edi, 0
