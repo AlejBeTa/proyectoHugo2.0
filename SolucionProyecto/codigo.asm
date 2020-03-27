@@ -12,6 +12,9 @@ INCLUDE Irvine32.inc
 	texto3 BYTE "Aqui va la descripcion", 0ah, 0
 	textomediaSA BYTE "Media de la sangre arterial: ", 0
 	textodesesSA BYTE "Desviacion estandar de la sangre arterial: ", 0
+	textomediaSV BYTE "Media de la sangre venosa: ", 0
+	textodesesSV BYTE "Desviacion estandar de la sangre venosa: ", 0
+	
 	nombreDeArchivo BYTE "DATOS.CSV",0
 	manejador DWORD ?
 	bufer BYTE TAM_BUFER DUP(?)
@@ -21,6 +24,7 @@ INCLUDE Irvine32.inc
 	sangreArterial REAL4 30 DUP(?)  ;Los datos de cada fila, serán almacenados acá
     sangreVenosa REAL4 30 DUP(?)
 	numf REAL4 ?					;Variable para agregar los datos a la pila
+	
 	tamLista1 DWORD 30
 	tamlista2 DWORD 30.0
 	aux DWORD ?
@@ -28,6 +32,9 @@ INCLUDE Irvine32.inc
 	auxz DWORD 0
 	numero DWORD 0
 	mediaSA DWORD 0
+	stdSA DWORD 0
+	mediaSV DWORD 0
+	stdSV DWORD 0
 	udt BYTE DWORD, 0				;Variable que irá del 1 - 3
 	posSA DWORD 0
 	posSV DWORD 0
@@ -174,6 +181,58 @@ main PROC
 		mov edx,OFFSET textodesesSa
 		call WriteString
 		call writeFloat
+		
+; Media de la sangre venosa
+	media_SV:
+		finit
+		mov esi, 0 
+		mov ecx, tamLista1
+		fldz
+		suma3:
+			fld sangreVenosa[esi]
+			;call writeFloat
+			;call Crlf
+			fadd
+			add esi, TYPE REAL4
+		loop suma3
+		fld tamLista2
+		fdiv
+		mov edx,OFFSET textomediaSV
+		call Crlf
+		call WriteString
+		call writeFloat
+		call Crlf
+		fstp mediaSV
+
+; Desviación estandar de la sangre Venosa:
+	std_SV:
+		finit 
+		mov numero, 0
+		mov esi, 0
+		mov ecx, tamLista1
+		suma4:
+			fld sangreVenosa[esi]
+			add esi, TYPE REAL4
+			fld mediaSV
+			fsub 
+			fst aux
+			fld aux
+			fmul
+			fld numero
+			fadd
+			fstp numero
+
+		loop suma4
+		fld numero
+		fld tamLista2
+		fdiv
+		fsqrt
+		mov edx,OFFSET textodesesSv
+		call WriteString
+		call writeFloat
+		fstp stdSV
+		call Crlf	
+
 	fin:
 		
 		
