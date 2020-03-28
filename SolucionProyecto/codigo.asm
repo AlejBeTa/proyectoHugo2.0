@@ -17,8 +17,8 @@ INCLUDE Irvine32.inc
 	textodesesSV BYTE "Desviacion estandar de la sangre venosa: ", 0
 	textocorper BYTE "Correlacion de Pearson: ", 0
 	textofinal BYTE "Gracias por usar nuestro programa, vuelva pronto.",0
-	textoIntercepto BYTE "Intercepto de la regresión lineal Sangre Venosa y Sangre arterial: ",0
-	textoPendiente BYTE "Pendiente de la regresión lineal Sangre Venosa y Sangre arterial: ",0
+	textoIntercepto BYTE "Intercepto de la regresion lineal Sangre Venosa y Sangre arterial: ",0
+	textoPendiente BYTE "Pendiente de la regresion lineal Sangre Venosa y Sangre arterial: ",0
 
 	nombreDeArchivo BYTE "DATOS.CSV",0
 	manejador DWORD ?
@@ -144,24 +144,26 @@ main PROC
 
 ; <--- Lectura y extracción de datos completado --->
 ; <--- Ahora haremos los calculos pedidos --->
+
+
 	media_SA:
 		finit
 		mov esi, 0 
 		mov ecx, tamLista1
 		fldz
-		L2:
-			fld sangreArterial[esi]
+		suma1:							;Sumamos todos los datos almacenados en sangreArterial
+			fld sangreArterial[esi]	
 			fadd
 			add esi, TYPE REAL4
-		loop L2
+		loop suma1
 		fld tamLista2
 		fdiv
-		mov edx,OFFSET textomediaSa
 		call Crlf
+		mov edx,OFFSET textomediaSa		;Impresión de la respuesta
 		call WriteString
 		call writeFloat
-		call Crlf
 		fstp mediaSA
+		call Crlf
 
 ; Desviación estandar de la sangre Arterial:
 	std_SA:
@@ -169,8 +171,8 @@ main PROC
 		mov numero, 0
 		mov esi, 0
 		mov ecx, tamLista1
-		suma:
-			fld sangreArterial[esi]
+		suma2:							;Hallamos la sumatoria de la diferencias entre cada dato y el promedio, este resultado lo elevamos al cuadrado.
+			fld sangreArterial[esi]		
 			add esi, TYPE REAL4
 			fld mediaSA
 			fsub 
@@ -180,14 +182,12 @@ main PROC
 			fld numero
 			fadd
 			fstp numero
-
-		loop suma
-		fld numero
+		loop suma2
+		fld numero						
 		fld tamLista2
 		fdiv
 		fsqrt
-		mov edx,OFFSET textodesesSa
-		call Crlf
+		mov edx,OFFSET textodesesSa		;Impresión de la respuesta
 		call WriteString
 		call writeFloat
 		call Crlf
@@ -198,14 +198,14 @@ main PROC
 		mov esi, 0 
 		mov ecx, tamLista1
 		fldz
-		suma3:
+		suma3:							;Sumamos todos los datos almacenados en el arreglo sangreVenosa, para luego hallar la media
 			fld sangreVenosa[esi]
 			fadd
 			add esi, TYPE REAL4
 		loop suma3
 		fld tamLista2
 		fdiv
-		mov edx,OFFSET textomediaSV
+		mov edx,OFFSET textomediaSV		;Imprimimos el resultado
 		call Crlf
 		call WriteString
 		call writeFloat
@@ -219,7 +219,7 @@ main PROC
 		mov esi, 0
 		mov ecx, tamLista1
 		suma4:
-			fld sangreVenosa[esi]
+			fld sangreVenosa[esi]		;Hallamos la sumatoria de la diferencias entre cada dato y el promedio, este resultado lo elevamos al cuadrado.
 			add esi, TYPE REAL4
 			fld mediaSV
 			fsub 
@@ -235,12 +235,11 @@ main PROC
 		fld tamLista2
 		fdiv
 		fsqrt
-		mov edx,OFFSET textodesesSv
-		call Crlf
+		mov edx,OFFSET textodesesSv		;Imprimimos la respuesta
 		call WriteString
 		call writeFloat
-		call Crlf
 		fstp stdSV
+		call Crlf	
 
 	;Correlacion de Pearson metodo de puntuaciones directas
 
@@ -356,6 +355,7 @@ main PROC
 		call Crlf
 		call WaitMsg
 		call Crlf
+		call Crlf
 
 	; <--- Calcularemos la regresión lineal --->
 ; <--- Empezamos hallando la covarianza --->
@@ -413,6 +413,14 @@ main PROC
 			call writeFloat
 			call Crlf
 			fstp pendiente
+			call Crlf
+			call WaitMsg
+			call Crlf
+			call Crlf
+			mov edx,OFFSET textofinal		;Despedida
+			call WriteString
+			call Crlf
+			call Crlf
 	fin:	
 	exit
 main ENDP
