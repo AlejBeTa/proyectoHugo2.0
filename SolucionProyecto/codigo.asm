@@ -17,6 +17,9 @@ INCLUDE Irvine32.inc
 	textodesesSV BYTE "Desviacion estandar de la sangre venosa: ", 0
 	textocorper BYTE "Correlacion de Pearson: ", 0
 	textofinal BYTE "Gracias por usar nuestro programa, vuelva pronto.",0
+	textoIntercepto BYTE "Intercepto de la regresión lineal Sangre Venosa y Sangre arterial: ",0
+	textoPendiente BYTE "Pendiente de la regresión lineal Sangre Venosa y Sangre arterial: ",0
+
 	nombreDeArchivo BYTE "DATOS.CSV",0
 	manejador DWORD ?
 	bufer BYTE TAM_BUFER DUP(?)
@@ -37,10 +40,14 @@ INCLUDE Irvine32.inc
 	stdSA DWORD 0
 	mediaSV DWORD 0
 	stdSV DWORD 0
+	stdS2 DWORD 0
 	corpear DWORD 0
 	udt BYTE DWORD, 0				;Variable que irá del 1 - 3
 	posSA DWORD 0
 	posSV DWORD 0
+	covar DWORD 0
+	intercepto DWORD 0
+	pendiente DWORD 0
 	;Fin variable de uso general
 
 	;Variable de uso para parseo
@@ -349,6 +356,63 @@ main PROC
 		call Crlf
 		call WaitMsg
 		call Crlf
+
+	; <--- Calcularemos la regresión lineal --->
+; <--- Empezamos hallando la covarianza --->
+
+	regLin:
+		finit 
+		mov ecx, tamLista1
+		mov esi, 0
+		mov covar, 0
+		suma5:								;Hallaremos la siguiente formula: sumatoria hasta n de (x-x*)(y-y*) entienda x* y y* cómo el valor promedio.
+			fld sangreArterial[esi]
+			fld mediaSA
+			fsub
+			fstp aux
+			fld sangreVenosa[esi]
+			fld mediaSV
+			fsub
+			fld aux
+			fmul
+			fld covar
+			fadd
+			fstp covar
+			add esi, TYPE real4
+		loop suma5
+			fld covar
+			fld tamLista2
+			fdiv
+			fstp covar						;Este es el valor final de la covarianza entre la sangre arterial y la sangre venosa
+
+; <--- En este código siguiente encontraremos el intercepto de la regresión lineal --->
+
+			fld stdSV
+			fld stdSV
+			fmul 
+			fstp stdS2
+			fld covar
+			fld stdS2
+			fdiv
+			mov edx,OFFSET textoIntercepto	;Imprimos el intercepto de esta regresión lineal
+			call WriteString
+			call writeFloat
+			call Crlf
+
+; <--- Encontraremos ahora el valor de la pendiente --->
+
+			fst intercepto
+			fld mediaSV
+			fmul
+			fstp aux
+			fld mediaSA
+			fld aux
+			fsub
+			mov edx,OFFSET textoPendiente	;Se imprime la pendiente de esta regresión lineal
+			call WriteString
+			call writeFloat
+			call Crlf
+			fstp pendiente
 	fin:	
 	exit
 main ENDP
