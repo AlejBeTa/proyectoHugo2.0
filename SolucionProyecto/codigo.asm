@@ -99,7 +99,6 @@ main PROC
 		jz punto
 		call IsDigit				;Verifica si el caracter numero esi es un digito
 		jz digito
-		
 		jmp salto					;Si es algo diferente, no pasa nada
 		digito:
 			call Num1		
@@ -148,11 +147,11 @@ main PROC
 		loop L2
 		fld tamLista2
 		fdiv
-		call Crlf
-		call Crlf
 		mov edx,OFFSET textomediaSa
+		call Crlf
 		call WriteString
 		call writeFloat
+		call Crlf
 		fstp mediaSA
 
 ; Desviación estandar de la sangre Arterial:
@@ -178,11 +177,11 @@ main PROC
 		fld tamLista2
 		fdiv
 		fsqrt
-		call Crlf
-		call Crlf
 		mov edx,OFFSET textodesesSa
+		call Crlf
 		call WriteString
 		call writeFloat
+		call Crlf
 		
 ; Media de la sangre venosa
 	media_SV:
@@ -228,10 +227,11 @@ main PROC
 		fdiv
 		fsqrt
 		mov edx,OFFSET textodesesSv
+		call Crlf
 		call WriteString
 		call writeFloat
-		fstp stdSV
 		call Crlf
+		fstp stdSV
 
 	;Correlacion de Pearson metodo de puntuaciones directas
 
@@ -333,12 +333,20 @@ main PROC
 		fld auxz
 		fmul
 		fdiv
+		call Crlf
+		call WaitMsg
+		call Crlf
 		mov edx,OFFSET textocorper
+		call Crlf
 		call WriteString
-		call WriteFloat
+		call writeFloat
+		call Crlf
 		fstp corpear
 		;Fin del calculo de la correlacion, queda guardada en la variable corpear
 
+		call Crlf
+		call WaitMsg
+		call Crlf
 	fin:	
 	exit
 main ENDP
