@@ -1,5 +1,3 @@
-
-
 INCLUDE Irvine32.inc
 .data
 	TAM_BUFER = 5000
@@ -9,12 +7,16 @@ INCLUDE Irvine32.inc
 	txterror BYTE "Hubo un error en la lectura del archivo, verifique la ubicacion o nombre del archivo",0ah,0
 	texto1 BYTE "Bienvenido, este programa en ensamblador es para Arquitectura de Computadores (3007863) del semestre 2019-2",0ah,0
 	texto2 BYTE "hecho en el 2020 por Alejandro Bedoya Taborda 1152226157 y Cristian Camilo Henao Rojas 1017259477", 0ah, 0
-	texto3 BYTE "Aqui va la descripcion", 0ah, 0
+	texto3 BYTE "En la primera parte leemos e imprimimos los datos del archivo.", 0ah,
+				"En la segunda parte hacemos todo el procedimiento de parseo y guardado en las listas para poder manipular los datos.",0ah,
+				"En la tercera parte estan todos los calculos matematicos pedidos.",0ah,
+				"En la ultima parte estan procedimientos utiles para nuestro parseo y llenado de listas, cada que encontrabamos una coma usamos la instruccion ParseDecimal32.",0ah,0
 	textomediaSA BYTE "Media de la sangre arterial: ", 0
 	textodesesSA BYTE "Desviacion estandar de la sangre arterial: ", 0
 	textomediaSV BYTE "Media de la sangre venosa: ", 0
 	textodesesSV BYTE "Desviacion estandar de la sangre venosa: ", 0
 	textocorper BYTE "Correlacion de Pearson: ", 0
+	textofinal BYTE "Gracias por usar nuestro programa, vuelva pronto.",0
 	nombreDeArchivo BYTE "DATOS.CSV",0
 	manejador DWORD ?
 	bufer BYTE TAM_BUFER DUP(?)
